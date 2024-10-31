@@ -2,11 +2,9 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { Book, BarChart2, Award, PlusCircle, Download } from 'lucide-react'
-import Link from 'next/link';
-interface Body_startProps {
-  onStartTest: () => void
-}
+import { Book, BarChart2,  PlusCircle, Download } from 'lucide-react'
+
+
 
   const Body_start  = () => {
   const router = useRouter()
