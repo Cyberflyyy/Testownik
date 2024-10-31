@@ -1,10 +1,18 @@
 'use client'
-
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
 
-export default function Testownik() {
+interface Body_mainProps {
+  onReturnToStart: () => void
+}
+
+const Body_main: React.FC<Body_mainProps> = ({ onReturnToStart }) => {
+  const router = useRouter()
+  const handleback = () => {
+    router.push('/home')
+  }
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({})
 
@@ -63,6 +71,16 @@ export default function Testownik() {
             </div>
           </div>
         </div>
+        <button
+          onClick={onReturnToStart}
+          className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out flex items-center justify-center"
+        >
+          <ArrowLeft className="mr-2" /> Powrót do startu
+        </button>
+        <button onClick={handleback}>
+         <p>Powrót do strony głownej</p>
+
+        </button>
       </div>
 
       <div className="flex-grow flex flex-col">
@@ -124,3 +142,5 @@ export default function Testownik() {
     </div>
   )
 }
+
+export default Body_main
