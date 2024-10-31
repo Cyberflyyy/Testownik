@@ -1,11 +1,28 @@
-import NextAuth from "next-auth"
-import GithubProvider from "next-auth/providers/github"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { PrismaClient } from "@prisma/client"
+import { NextApiHandler } from 'next';
+import NextAuth, { NextAuthOptions } from 'next-auth';
+import GithubProvider from 'next-auth/providers/github';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import { PrismaClient } from '@prisma/client';
+import { Session } from 'next-auth';
+import { User } from 'next-auth';
 
-const prisma = new PrismaClient()
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
 
-export const authOptions = {
+  interface User {
+    id: string;
+  }
+}
+const prisma = new PrismaClient();
+
+const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     GithubProvider({
@@ -14,7 +31,7 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
+    async session({ session, user }: { session: Session; user: User }) {
       if (session?.user) {
         session.user.id = user.id;
       }
@@ -24,8 +41,8 @@ export const authOptions = {
   pages: {
     signIn: '/',
   },
-}
+};
 
-const handler = NextAuth(authOptions)
+const handler: NextApiHandler = (req, res) => NextAuth(req, res, authOptions);
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };
