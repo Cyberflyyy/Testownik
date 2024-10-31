@@ -4,11 +4,9 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
 
-interface Body_mainProps {
-  onReturnToStart: () => void
-}
 
-const Body_main: React.FC<Body_mainProps> = ({ onReturnToStart }) => {
+
+const Body_main = () => {
   const router = useRouter()
   const handleback = () => {
     router.push('/home')
@@ -72,7 +70,7 @@ const Body_main: React.FC<Body_mainProps> = ({ onReturnToStart }) => {
           </div>
         </div>
         <button
-          onClick={onReturnToStart}
+         
           className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out flex items-center justify-center"
         >
           <ArrowLeft className="mr-2" /> Powrót do startu
