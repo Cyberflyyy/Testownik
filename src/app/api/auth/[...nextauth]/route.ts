@@ -1,28 +1,21 @@
-import { NextApiHandler } from 'next';
-import NextAuth, { NextAuthOptions } from 'next-auth';
-import GithubProvider from 'next-auth/providers/github';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { PrismaClient } from '@prisma/client';
-import { Session } from 'next-auth';
-import { User } from 'next-auth';
+import NextAuth, { NextAuthOptions, Session, User } from "next-auth"
+import GithubProvider from "next-auth/providers/github"
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { PrismaClient } from "@prisma/client"
 
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-    };
-  }
+const prisma = new PrismaClient()
 
-  interface User {
+// Definiujemy własny interfejs rozszerzający Session
+interface ExtendedSession extends Session {
+  user: {
     id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
   }
 }
-const prisma = new PrismaClient();
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     GithubProvider({
@@ -31,18 +24,18 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async session({ session, user }: { session: Session; user: User }) {
-      if (session?.user) {
-        session.user.id = user.id;
-      }
-      return session;
+    async session({ session, user }: { session: Session; user: User }): Promise<ExtendedSession> {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+        },
+      } as ExtendedSession;
     },
   },
-  pages: {
-    signIn: '/',
-  },
-};
+}
 
-const handler: NextApiHandler = (req, res) => NextAuth(req, res, authOptions);
+const handler = NextAuth(authOptions)
 
-export { handler as GET, handler as POST };
+export { handler as GET, handler as POST }
