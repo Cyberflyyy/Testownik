@@ -2,7 +2,7 @@
 import { signOut } from "next-auth/react";
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, ArrowLeft } from 'lucide-react'
+import { Menu, X} from 'lucide-react'
 import Link from 'next/link'
 
 const Header_main: React.FC = () => {

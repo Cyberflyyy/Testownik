@@ -1,14 +1,10 @@
-"use client";
-import { useState } from 'react';
+
+
 import React from 'react'
 import Header_main from '@/components/header_main'
 import Body_main from '@/components/body_main'
-const page = () => {
-    const [isTestStarted, setIsTestStarted] = useState(false)
-    const handleReturnToStart = () => {
-        
-        setIsTestStarted(false)
-      }
+const Page = () => {
+    
   return (
     <>
     <Header_main />
@@ -17,4 +13,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page
