@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Check, ArrowRight } from 'lucide-react'
 import { useSession } from 'next-auth/react'
@@ -150,6 +150,9 @@ export default function Body_main() {
   }
 
   const goToNextQuestion = () => {
+   if (isCorrect){
+    null
+   }
     setSelectedAnswers([])
     setIsChecking(false)
     setIsCorrect(null)

@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
-
+interface Question {
+  question: string;
+  answers: string[];
+  correctAnswers: number[];
+}
 export async function POST(request: Request) {
   try {
     const { name, questions, userId } = await request.json()
@@ -12,7 +16,7 @@ export async function POST(request: Request) {
         name,
         userId,
         questions: {
-          create: questions.map((q: any) => ({
+          create: questions.map((q: Question) => ({
             question: q.question,
             answers: q.answers,
             correctAnswers: q.correctAnswers,
