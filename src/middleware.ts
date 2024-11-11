@@ -14,8 +14,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/home', request.url))
   }
 
-  // Jeśli użytkownik nie jest zalogowany i próbuje dostać się do chronionej ścieżki, przekieruj go na stronę logowania
-  
+  // Pozwól na dostęp do wszystkich innych ścieżek
+  return NextResponse.next()
 }
 
 export const config = {
