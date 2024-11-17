@@ -27,6 +27,7 @@ export async function PUT(request: Request) {
         name: test.name,
         questions: {
           deleteMany: {},
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           create: test.questions.map((q: any) => ({
             userId: userId,
             question: q.question,

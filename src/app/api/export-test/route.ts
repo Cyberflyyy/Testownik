@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient, Test, Question } from '@prisma/client'
+import { PrismaClient,Question } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
 
     const exportedTest = {
       name: test.name,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       questions: test.questions.map((q: Question) => ({
         question: q.question,
         answers: q.answers,

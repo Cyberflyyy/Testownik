@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
         name: test.name,
         userId: userId,
         questions: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           create: test.questions.map((q: any) => ({
             question: q.question,
             answers: q.answers,

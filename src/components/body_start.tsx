@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Book, BarChart2, PlusCircle, Delete, Edit, Clock } from 'lucide-react'
+import { Book, PlusCircle, Delete, Edit, Clock } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Session } from 'next-auth'
 
