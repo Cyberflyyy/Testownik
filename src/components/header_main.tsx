@@ -33,23 +33,22 @@ const Header_main: React.FC = () => {
             <div className="flex items-center">
 
               <h1 className="text-3xl font-bold text-white">
-                Testownik
+              QuickTest 
               </h1>
             </div>
-            <button
-      onClick={() => signOut()}
-      className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
-    >
-      Wyloguj się
-    </button>
+           
             <nav className="hidden md:flex space-x-4">
               <Link href="/" className="text-white hover:text-purple-400 transition-colors">Strona Główna</Link>
-              <Link href="/about" className="text-white hover:text-purple-400 transition-colors">O Nas</Link>
               <Link href="/contact" className="text-white hover:text-purple-400 transition-colors">Kontakt</Link>
+              <button className="text-white hover:text-red-400 transition-colors"
+              onClick={() => signOut()}>Wyloguj się
+              </button>
+              
+              
             </nav>
-            <button className="bg-purple-600 hidden md:block hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out">
+            <Link href="home/4" className="bg-purple-600 hidden md:block hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out">
               Stwórz bazę
-            </button>
+            </Link>
             <button 
               className="md:hidden text-white focus:outline-none z-20"
               onClick={toggleMenu}
@@ -77,6 +76,12 @@ const Header_main: React.FC = () => {
               <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out">
                 Stwórz bazę
               </button>
+              <button
+      onClick={() => signOut()}
+      className="p-2 bg-red-500 text-white  hover:bg-red-600 font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out"
+    >
+      Wyloguj się
+    </button>
             </div>
           </motion.div>
         )}

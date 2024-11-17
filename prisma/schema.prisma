@@ -34,7 +34,16 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-
+model UserStats {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  completedTests Int      @default(0)
+  totalScore     Float    @default(0)
+  averageScore   Float    @default(0)
+  user           User     @relation(fields: [userId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
 model User {
   id            String     @id @default(cuid())
   name          String?
@@ -45,8 +54,20 @@ model User {
   sessions      Session[]
   questions     Question[]
   tests         Test[]
-}
+  weeklyTestTimes WeeklyTestTime[]
+  stats UserStats?
 
+}
+model WeeklyTestTime {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  weekStart DateTime
+  totalTime Int      // Całkowity czas w sekundach
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, weekStart])
+}
 model VerificationToken {
   identifier String
   token      String   @unique

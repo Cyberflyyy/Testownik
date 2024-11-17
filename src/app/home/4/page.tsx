@@ -20,8 +20,9 @@ const CreateTestPage = () => {
   const [testName, setTestName] = useState('')
   const [questions, setQuestions] = useState<Question[]>([])
   const { data: session } = useSession() as { data: ExtendedSession | null }
+  const [isDisabled, setIsDisabled] = useState(false);
   const router = useRouter()
-
+  
   const addQuestion = () => {
     setQuestions([...questions, { question: '', answers: ['', '', '', ''], correctAnswers: [] }])
   }
@@ -77,6 +78,7 @@ const CreateTestPage = () => {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
+    setIsDisabled(true);
     e.preventDefault()
     if (!session?.user?.id) {
       console.error('User not authenticated')
@@ -205,6 +207,8 @@ const CreateTestPage = () => {
 
             <button
               type="submit"
+              
+              disabled={isDisabled}
               className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out"
             >
               Zapisz test

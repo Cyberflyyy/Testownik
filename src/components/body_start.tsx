@@ -1,13 +1,68 @@
-"use client";
+'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Book, BarChart2,  PlusCircle, Download } from 'lucide-react'
+import { Book, BarChart2, PlusCircle, Delete, Edit, Clock } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { Session } from 'next-auth'
 
+interface ExtendedSession extends Session {
+  user?: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  }
+}
 
-
-  const Body_start  = () => {
+const Body_start = () => {
   const router = useRouter()
+  const { data: session } = useSession() as { data: ExtendedSession | null }
+  const [weeklyTestTime, setWeeklyTestTime] = useState(0)
+  const [completedTests, setCompletedTests] = useState(0)
+  const [averageScore, setAverageScore] = useState(0)
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchWeeklyTestTime()
+      fetchUserStats()
+    }
+  }, [session])
+
+  const fetchWeeklyTestTime = async () => {
+    try {
+      const response = await fetch(`/api/get-weekly-test-time?userId=${session?.user?.id}`)
+      if (response.ok) {
+        const data = await response.json()
+        setWeeklyTestTime(data.weeklyTestTime)
+      } else {
+        console.error('Błąd podczas pobierania czasu testów:', await response.text())
+      }
+    } catch (error) {
+      console.error('Błąd podczas pobierania czasu testów:', error)
+    }
+  }
+
+  const fetchUserStats = async () => {
+    try {
+      const response = await fetch(`/api/get-user-stats?userId=${session?.user?.id}`)
+      if (response.ok) {
+        const data = await response.json()
+        setCompletedTests(data.completedTests)
+        setAverageScore(data.averageScore)
+      } else {
+        console.error('Błąd podczas pobierania statystyk użytkownika:', await response.text())
+      }
+    } catch (error) {
+      console.error('Błąd podczas pobierania statystyk użytkownika:', error)
+    }
+  }
+
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    return `${hours}h ${minutes}m ${seconds % 60}s`
+  }
 
   const handlefolder1 = () => {
     router.push('/home/1')
@@ -26,10 +81,8 @@ import { Book, BarChart2,  PlusCircle, Download } from 'lucide-react'
     <div className="flex-grow bg-gray-900 text-white p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
-          Witaj w Testowniku!
-          
+          Witaj w QuickTest !
         </h1>
-       
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <QuickAccessCard 
@@ -39,15 +92,15 @@ import { Book, BarChart2,  PlusCircle, Download } from 'lucide-react'
             onClick={handlefolder1}
           />
           <QuickAccessCard 
-            icon={<BarChart2 className="h-8 w-8" />}
-            title="Twoje statystyki"
-            description="Sprawdź swoje postępy i wyniki"
+            icon={<Edit className="h-8 w-8" />}
+            title="Edytuj "
+            description="Zmień nazwę, pytania lub odpowiedzi"
             onClick={handlefolder2}
           />
           <QuickAccessCard 
-            icon={<Download className="h-8 w-8" />}
-            title="Importuj zestawy"
-            description="Zaimportuj własne zestawy pytań"
+            icon={<Delete className="h-8 w-8" />}
+            title="Usuń test"
+            description="Usuń test którego nie potrzebujesz"
             onClick={handlefolder3}
           />
           <QuickAccessCard 
@@ -61,9 +114,13 @@ import { Book, BarChart2,  PlusCircle, Download } from 'lucide-react'
         <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
           <h2 className="text-2xl font-semibold mb-4">Twoje podsumowanie</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <StatCard title="Ukończone testy" value="42" />
-            <StatCard title="Średni wynik" value="78%" />
-            <StatCard title="Streak" value="5 dni" />
+            <StatCard title="Ukończone testy" value={completedTests.toString()} />
+            <StatCard title="Średni wynik" value={`${averageScore.toFixed(2)}%`} />
+            <StatCard 
+              title="Czas nauki w tym tygodniu" 
+              value={formatTime(weeklyTestTime)}
+              icon={<Clock className="h-6 w-6 text-purple-400" />}
+            />
           </div>
         </div>
 
@@ -103,13 +160,16 @@ const QuickAccessCard: React.FC<QuickAccessCardProps> = ({ icon, title, descript
 interface StatCardProps {
   title: string
   value: string
+  icon?: React.ReactNode
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value }) => (
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon }) => (
   <div className="bg-gray-700 rounded-lg p-4 text-center">
     <h4 className="text-lg font-semibold mb-2">{title}</h4>
-    <p className="text-3xl font-bold text-purple-400">{value}</p>
-    
+    <div className="flex items-center justify-center">
+      {icon && <div className="mr-2">{icon}</div>}
+      <p className="text-3xl font-bold text-purple-400">{value}</p>
+    </div>
   </div>
 )
 
