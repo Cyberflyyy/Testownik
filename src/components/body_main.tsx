@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Check, ArrowRight, Book, Clock, RefreshCw, Download, Upload } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Session } from 'next-auth'
+import { Menu, X} from 'lucide-react'
 
 interface ExtendedSession extends Session {
   user?: {
@@ -51,6 +52,7 @@ export default function Body_main() {
   const [elapsedTime, setElapsedTime] = useState(0)
   const [testStartTime, setTestStartTime] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(true)
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.id) {
@@ -165,7 +167,9 @@ export default function Body_main() {
       setIsLoading(false)
     }
   }
-  
+  const toggleMenu = () => {
+    setIsMenuOpen(prevState => !prevState)
+  }
   const handleTestSelect = (test: Test) => {
     setSelectedTest(test)
     localStorage.setItem('selectedTestId', test.id)
@@ -195,31 +199,37 @@ export default function Body_main() {
   }
 
   const handleCheckAnswer = () => {
-    if (!currentQuestion) return
-
-    const isAnswerCorrect = arraysEqual(selectedAnswers.sort(), currentQuestion.correctAnswers.sort())
-    setIsChecking(true)
-    setIsCorrect(isAnswerCorrect)
-
+    if (!currentQuestion) return;
+  
+    const isAnswerCorrect = arraysEqual(selectedAnswers.sort(), currentQuestion.correctAnswers.sort());
+    setIsChecking(true);
+    setIsCorrect(isAnswerCorrect);
+  
     if (isAnswerCorrect) {
-      setCorrectAnswersCount(prev => prev + 1)
-      updateQuestionRepetition(-1)
+      setCorrectAnswersCount(prev => prev + 1);
+      updateQuestionRepetition(-1);
     } else {
-      setIncorrectAnswersCount(prev => prev + 1)
-      updateQuestionRepetition(1)
+      setIncorrectAnswersCount(prev => prev + 1);
+      updateQuestionRepetition(1);
     }
-  }
+  };
 
   const updateQuestionRepetition = (change: number) => {
     setQuestions(prev => {
-      const updatedQuestions = prev.map(q => 
-        q.id === currentQuestion?.id
-          ? { ...q, repetitions: Math.max(0, q.repetitions + change) }
-          : q
-      )
-      return updatedQuestions.filter(q => q.repetitions > 0)
-    })
-  }
+      const updatedQuestions = prev.map(q => {
+        if (q.id === currentQuestion?.id) {
+          const newRepetitions = Math.max(0, q.repetitions + change);
+          const wasMastered = q.repetitions > 0 && newRepetitions === 0;
+          if (wasMastered) {
+            setMasteredQuestions(masteredQuestions + 1);
+          }
+          return { ...q, repetitions: newRepetitions };
+        }
+        return q;
+      });
+      return updatedQuestions.filter(q => q.repetitions > 0);
+    });
+  };
 
   const updateUserStats = async (score: number) => {
     if (!session?.user?.id) return
@@ -284,9 +294,7 @@ export default function Body_main() {
   }
 
   const goToNextQuestion = () => {
-    if (isCorrect) {
-      setMasteredQuestions(prev => prev + 1)
-    }
+    
     setSelectedAnswers([])
     setIsChecking(false)
     setIsCorrect(null)
@@ -420,102 +428,131 @@ export default function Body_main() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col lg:flex-row">
-      <div className="w-full lg:w-56 xl:w-64 bg-gray-800 p-4 md:p-6 flex flex-row lg:flex-col justify-between lg:justify-start lg:space-y-6 order-first lg:order-last">
-        <div>
-          <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">Wszystkie pytania</h3>
-          <div className="text-2xl md:text-3xl font-bold">{questions.length}</div>
-        </div>
-        <div>
-          <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">Opanowane</h3>
-          <div className="text-2xl md:text-3xl font-bold">{masteredQuestions}</div>
-        </div>
-        <div className="w-1/3 lg:w-full">
-          <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">Odpowiedzi</h3>
-          <div className="h-6 md:h-8 bg-gray-700 rounded-full overflow-hidden flex">
-            <div 
-              className="bg-green-500 flex items-center justify-center"
-              style={{ width: `${(correctAnswersCount / (correctAnswersCount + incorrectAnswersCount || 1)) * 100}%` }}
-            >
-              <span className="font-bold text-xs md:text-sm">{correctAnswersCount > 0 && correctAnswersCount}</span>
-            </div>
-            <div 
-              className="bg-red-500 flex items-center justify-center"
-              style={{ width: `${(incorrectAnswersCount / (correctAnswersCount + incorrectAnswersCount || 1)) * 100}%` }}
-            >
-              <span className="font-bold text-xs md:text-sm">{incorrectAnswersCount > 0 && incorrectAnswersCount}</span>
-            </div>
-          </div>
-        </div>
-        <div className="w-full">
-          <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">Czas testu</h3>
-          <div className="text-2xl md:text-3xl font-bold flex items-center justify-center bg-gray-700 rounded-lg p-2 overflow-hidden">
-            <Clock className="mr-2 flex-shrink-0" size={24} />
-            <div className="relative">
-              {formatTime(elapsedTime).split('').map((char, index) => (
-                <motion.span
-                  key={`${index}-${char}`}
-                  className="inline-block"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
+    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+      <div className='w-full bg-gray-800 flex flex-col items-center justify-center'> 
+      <div className="flex flex-row justify-between items-center w-full my-1 px-2 "> 
+          <h1 className=' text-2xl font-semibold'>Aktualny test to: {selectedTest.name}</h1>
+          <button
+              className="lg:hidden text-white focus:outline-none"
+               onClick={toggleMenu}
+               aria-label={isMenuOpen ? "Zamknij menu" : "Otwórz menu"}
                 >
-                  {char}
-                </motion.span>
-              ))}
-            </div>
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+      </div>
+            <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ height: 0 }}
+            animate={{ height: 'auto' }}
+            exit={{ height: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="bg-gray-800 shadow-lg overflow-hidden lg:hidden"
+          >
+            <div className='flex flex-col items-center justify-center w-screen'>
+            <div className="w-full lg:w-64 bg-gray-800 p-4 flex flex-col space-y-4">
+          <div className="  grid grid-cols-2 lg:grid-cols-1 gap-4">
+            
+          </div>
+          
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => {
+                if (testStartTime) {
+                  const timeSpent = Math.floor((Date.now() - testStartTime) / 1000)
+                  updateWeeklyTestTime(timeSpent)
+                }
+                setSelectedTest(null)
+                localStorage.removeItem(`testState_${selectedTest?.id}`)
+                localStorage.removeItem('selectedTestId')
+              }}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center"
+            >
+              <ArrowLeft className="mr-2" size={16} /> Powrót do wyboru testu
+            </button>
+            <button onClick={handleback} className="text-purple-400 hover:text-purple-300 py-2">
+              Powrót do strony głównej
+            </button>
+            <button
+              onClick={resetTest}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center"
+            >
+              <RefreshCw className="mr-2" size={16} /> Resetuj test
+            </button>
+            <button
+              onClick={handleExportTest}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center"
+            >
+              <Download className="mr-2" size={16} /> Eksportuj test
+            </button>
+            <label
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center cursor-pointer"
+            >
+              <Upload className="mr-2" size={16} /> Importuj test
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportTest}
+                className="hidden"
+                ref={fileInputRef}
+              />
+            </label>
           </div>
         </div>
-        <button
-          onClick={() => {
-            if (testStartTime) {
-              const timeSpent = Math.floor((Date.now() - testStartTime) / 1000)
-              updateWeeklyTestTime(timeSpent)
-            }
-            setSelectedTest(null)
-            localStorage.removeItem(`testState_${selectedTest?.id}`)
-            localStorage.removeItem('selectedTestId')
-          }}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center"
-        >
-          <ArrowLeft className="mr-2" /> Powrót do wyboru testu
-        </button>
-        <button onClick={handleback} className="text-purple-400 hover:text-purple-300">
-          Powrót do strony głównej
-        </button>
-        <button
-          onClick={resetTest}
-          className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center"
-        >
-          <RefreshCw className="mr-2" /> Resetuj test
-        </button>
-        <button
-          onClick={handleExportTest}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center"
-        >
-          <Download className="mr-2" /> Eksportuj test
-        </button>
-        <div>
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleImportTest}
-            className="hidden"
-            ref={fileInputRef}
-            id="import-test-input"
-          />
-          <label
-            htmlFor="import-test-input"
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center cursor-pointer"
-          >
-            <Upload className="mr-2" /> Importuj test
-          </label>
-        </div>
+              </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       </div>
-
-      <div className="flex-grow flex flex-col">
+      <div className="flex-grow flex flex-col lg:flex-row ">
+        
+            <div className='lg:hidden'>
+              <h3 className="text-sm md:text-lg font-semibold mb-1">Wszystkie pytania</h3>
+              <div className="text-2xl md:text-3xl font-bold">{questions.length}</div>
+            </div>
+            <div className='lg:hidden'>
+              <h3 className="text-sm md:text-lg font-semibold mb-1">Opanowane</h3>
+              <div className="text-2xl md:text-3xl font-bold">{masteredQuestions}</div>
+            </div>
+            <div className="col-span-2 lg:col-span-1 lg:hidden">
+              <h3 className="text-base md:text-lg font-semibold mb-1">Odpowiedzi</h3>
+              <div className="h-6 bg-gray-700 rounded-full overflow-hidden flex lg:hidden">
+                <div 
+                  className="bg-green-500 flex items-center justify-center"
+                  style={{ width: `${(correctAnswersCount / (correctAnswersCount + incorrectAnswersCount || 1)) * 100}%` }}
+                > 
+                  <span className="text-xs font-bold md:text-sm">{correctAnswersCount > 0 && correctAnswersCount}</span>
+                </div>
+                <div 
+                  className="bg-red-500 flex items-center  justify-center"
+                  style={{ width: `${(incorrectAnswersCount / (correctAnswersCount + incorrectAnswersCount || 1)) * 100}%` }}
+                >
+                  <span className="text-xs font-bold md:text-sm">{incorrectAnswersCount > 0 && incorrectAnswersCount}</span>
+                </div>
+              </div>
+            </div>
+            <div className="col-span-2 lg:col-span-1 lg:hidden">
+              <h3 className="md:text-lg font-semibold mb-1">Czas testu</h3>
+              <div className="text-2xl md:text-3xl font-bold flex items-center  justify-center  bg-gray-700 rounded-lg p-2">
+                <Clock className=" flex-shrink-0" size={24} />
+                <div className="relative">
+                  {formatTime(elapsedTime).split('').map((char, index) => (
+                    <motion.span
+                      key={`${index}-${char}`}
+                      className="inline-block"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </div>
+              </div>
+            </div>
         <main className="container mx-auto p-4 sm:p-6 md:p-8 flex-grow flex items-center justify-center">
+          
           <div className="w-full max-w-2xl">
             <AnimatePresence mode="wait">
               <motion.div
@@ -578,12 +615,102 @@ export default function Body_main() {
           </div>
         </main>
 
-        <footer className="bg-gray-800 p-4">
-          <div className="container mx-auto text-center text-gray-400 text-sm">
-            <p>&copy; 2024 Testownik. Wszelkie prawa zastrzeżone.</p>
+        <div className="w-full lg:w-64 bg-gray-800 p-4 lg:flex lg:flex-col space-y-4 hidden   ">
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
+            <div>
+              <h3 className="text-sm md:text-lg font-semibold mb-1">Wszystkie pytania</h3>
+              <div className="text-2xl md:text-3xl font-bold">{questions.length}</div>
+            </div>
+            <div>
+              <h3 className="text-sm md:text-lg font-semibold mb-1">Opanowane</h3>
+              <div className="text-2xl md:text-3xl font-bold">{masteredQuestions}</div>
+            </div>
+            <div className="col-span-2 lg:col-span-1">
+              <h3 className="text-base md:text-lg font-semibold mb-1">Odpowiedzi</h3>
+              <div className="h-6 bg-gray-700 rounded-full overflow-hidden flex">
+                <div 
+                  className="bg-green-500 flex items-center justify-center"
+                  style={{ width: `${(correctAnswersCount / (correctAnswersCount + incorrectAnswersCount || 1)) * 100}%` }}
+                > 
+                  <span className="text-xs font-bold md:text-sm">{correctAnswersCount > 0 && correctAnswersCount}</span>
+                </div>
+                <div 
+                  className="bg-red-500 flex items-center  justify-center"
+                  style={{ width: `${(incorrectAnswersCount / (correctAnswersCount + incorrectAnswersCount || 1)) * 100}%` }}
+                >
+                  <span className="text-xs font-bold md:text-sm">{incorrectAnswersCount > 0 && incorrectAnswersCount}</span>
+                </div>
+              </div>
+            </div>
+            <div className="col-span-2 lg:col-span-1">
+              <h3 className="md:text-lg font-semibold mb-1">Czas testu</h3>
+              <div className="text-2xl md:text-3xl font-bold flex items-center justify-center bg-gray-700 rounded-lg p-2">
+                <Clock className="mr-2 flex-shrink-0" size={24} />
+                <div className="relative">
+                  {formatTime(elapsedTime).split('').map((char, index) => (
+                    <motion.span
+                      key={`${index}-${char}`}
+                      className="inline-block"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-        </footer>
+          
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => {
+                if (testStartTime) {
+                  const timeSpent = Math.floor((Date.now() - testStartTime) / 1000)
+                  updateWeeklyTestTime(timeSpent)
+                }
+                setSelectedTest(null)
+                localStorage.removeItem(`testState_${selectedTest?.id}`)
+                localStorage.removeItem('selectedTestId')
+              }}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center"
+            >
+              <ArrowLeft className="mr-2" size={16} /> Powrót do wyboru testu
+            </button>
+            <button onClick={handleback} className="text-purple-400 hover:text-purple-300 py-2">
+              Powrót do strony głównej
+            </button>
+            <button
+              onClick={resetTest}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center"
+            >
+              <RefreshCw className="mr-2" size={16} /> Resetuj test
+            </button>
+            <button
+              onClick={handleExportTest}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center"
+            >
+              <Download className="mr-2" size={16} /> Eksportuj test
+            </button>
+            <label
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 ease-in-out flex items-center justify-center cursor-pointer"
+            >
+              <Upload className="mr-2" size={16} /> Importuj test
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportTest}
+                className="hidden"
+                ref={fileInputRef}
+              />
+            </label>
+          </div>
+        </div>
       </div>
+
+      
     </div>
   )
 }

@@ -7,7 +7,7 @@ const Page = () => {
     
   return (
     <>
-    <Header_main />
+    
     <Body_main  />
     </>
   )
