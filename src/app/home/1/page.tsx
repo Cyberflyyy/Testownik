@@ -1,16 +1,12 @@
+import React from "react";
 
-
-import React from 'react'
-
-import Body_main from '@/components/body_main'
+import Body_main from "@/components/body_main";
 const Page = () => {
-    
   return (
     <>
-    
-    <Body_main  />
+      <Body_main />
     </>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;
